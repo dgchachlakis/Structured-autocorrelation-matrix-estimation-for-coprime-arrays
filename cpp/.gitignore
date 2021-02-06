@@ -1,3 +1,4 @@
-.vscode
+.vscode/
 example.o
 example
+build/
