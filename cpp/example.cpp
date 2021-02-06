@@ -73,7 +73,7 @@ int main()
             Zsel = spatial_smoothing(F, linalg::dot(transpose(Esel), rest));
             Zavg = spatial_smoothing(F, linalg::dot(transpose(Eavg), rest));
             // Proposed estimate
-            permitted_iterations = 1;
+            permitted_iterations = 100;
             Zin = sqrtm(linalg::dot(Zavg, transpose(conj(Zavg))));
             Zstructured = structured_estimate(Zin, Lp - number_of_sources, permitted_iterations, false);
             err_sel(j, i) = real(pow(linalg::norm(Zsel - Z), 2));
