@@ -11,7 +11,7 @@ Science Direct: https://doi.org/10.1016/j.sigpro.2021.107987
 
 **Example**
 
-For a usage example, please open the cpp or python direcotory for C++ or Python, respectively. 
+For usage examples, please open the cpp and python directories for C++ and Python, respectively. 
 
 
 ---
