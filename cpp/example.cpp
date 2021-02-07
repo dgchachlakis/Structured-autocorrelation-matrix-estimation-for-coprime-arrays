@@ -42,13 +42,13 @@ int main()
     // DoA sources
     number_of_sources = 3;
     thetas = {M_PI_4, M_PI_4 / 2, M_PI_4 / 3};
+    // Powers
+    noise_power = 1;
+    source_powers = {1, 1, 1};
     // Array response matrix
     S = response_matrix(thetas, carrier_frequency, propagation_speed, p);
     // Smoothing matrix
     F = smoothing_matrix(Lp);
-    // Powers
-    noise_power = 1;
-    source_powers = {1, 1, 1};
     // Nominal autocorrelation matrix (Physical array)
     R = autocorrelation_matrix(S, source_powers, noise_power);
     r = ravel(R);
