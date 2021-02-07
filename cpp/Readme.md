@@ -32,89 +32,89 @@ using namespace xt;
 ```
 We consider coprime array with coprime natureals M, N.
 ```cpp
- // Coprime array
-    M = 2;
-    N = 3;
-    L = array_length(M, N);
-    Lp = coarray_length(M, N);
-    carrier_frequency = (double)3 / 2 * pow(10, 8);
-    propagation_speed = 3 * pow(10, 8);
-    // Element locations of the physical array
-    p = ca_element_locations(M, N, carrier_frequency, propagation_speed);
+// Coprime array
+M = 2;
+N = 3;
+L = array_length(M, N);
+Lp = coarray_length(M, N);
+carrier_frequency = (double)3 / 2 * pow(10, 8);
+propagation_speed = 3 * pow(10, 8);
+// Element locations of the physical array
+p = ca_element_locations(M, N, carrier_frequency, propagation_speed);
 ```
 Then, we form the standard selection and averaging sampling matrices. 
 ```cpp
-    // Set of differences of element-locations
-    pdist = pair_wise_distances(p);
-    // Set of indices corresponding to each 'element' of the coarray
-    Jsets = form_index_sets(M, N, pdist, carrier_frequency, propagation_speed);
-    // Set of indices corresponding to each 'element' of the coarray
-    Jsets = form_index_sets(M, N, pdist, carrier_frequency, propagation_speed);
-    // Selection and averaging sampling matrices
-    Esel = selection_sampling(Jsets, L, Lp);
-    Eavg = averaging_sampling(Jsets, L, Lp);
+// Set of differences of element-locations
+pdist = pair_wise_distances(p);
+// Set of indices corresponding to each 'element' of the coarray
+Jsets = form_index_sets(M, N, pdist, carrier_frequency, propagation_speed);
+// Set of indices corresponding to each 'element' of the coarray
+Jsets = form_index_sets(M, N, pdist, carrier_frequency, propagation_speed);
+// Selection and averaging sampling matrices
+Esel = selection_sampling(Jsets, L, Lp);
+Eavg = averaging_sampling(Jsets, L, Lp);
 ```
 We consider a set of DoA sources with some powers (linear scale). Noise power (linear scale).
 ```cpp
-    // DoA sources
-    number_of_sources = 3;
-    thetas = {M_PI_4, M_PI_4 / 2, M_PI_4 / 3};
-    // Powers
-    noise_power = 1;
-    source_powers = {1, 1, 1};
+// DoA sources
+number_of_sources = 3;
+thetas = {M_PI_4, M_PI_4 / 2, M_PI_4 / 3};
+// Powers
+noise_power = 1;
+source_powers = {1, 1, 1};
 ```
 We form the nominal (true) autocorrelation matrix of the coarray.
 ```cpp
-    // Array response matrix
-    S = response_matrix(thetas, carrier_frequency, propagation_speed, p);
-    // Smoothing matrix
-    F = smoothing_matrix(Lp);
-    // Nominal autocorrelation matrix (Physical array)
-    R = autocorrelation_matrix(S, source_powers, noise_power);
-    r = ravel(R);
-    // Nominal autocorrelation matrix (coarray)
-    Z = spatial_smoothing(F, linalg::dot(transpose(Esel), r));
+// Array response matrix
+S = response_matrix(thetas, carrier_frequency, propagation_speed, p);
+// Smoothing matrix
+F = smoothing_matrix(Lp);
+// Nominal autocorrelation matrix (Physical array)
+R = autocorrelation_matrix(S, source_powers, noise_power);
+r = ravel(R);
+// Nominal autocorrelation matrix (coarray)
+Z = spatial_smoothing(F, linalg::dot(transpose(Esel), r));
 ```
 We consider multiple statistically independent realizations of noise and compute (empirically) the Mean-Squared-Estimation (MSE) error of each method while the sample-support varies. 
 ```cpp
 // Received-snapshots and autocorrelation matrix estimation
-    number_of_snapshots = {1, 10, 100, 1000};
-    number_of_realizations = 500;
-    int le = number_of_snapshots.size();
-    xarray<double> err_sel = zeros<double>({le, number_of_realizations});
-    xarray<double> err_avg = zeros<double>({le, number_of_realizations});
-    xarray<double> err_structured = zeros<double>({le, number_of_realizations});
-    for (int j = 0; j < number_of_snapshots.size(); j++)
+number_of_snapshots = {1, 10, 100, 1000};
+number_of_realizations = 500;
+int le = number_of_snapshots.size();
+xarray<double> err_sel = zeros<double>({le, number_of_realizations});
+xarray<double> err_avg = zeros<double>({le, number_of_realizations});
+xarray<double> err_structured = zeros<double>({le, number_of_realizations});
+for (int j = 0; j < number_of_snapshots.size(); j++)
+{
+    int Q = number_of_snapshots(j);
+    for (int i = 0; i < number_of_realizations; i++)
     {
-        int Q = number_of_snapshots(j);
-        for (int i = 0; i < number_of_realizations; i++)
-        {
-            received_snapshots = snapshots(S, source_powers, noise_power, Q);
-            Rest = autocorrelation_matrix_est(received_snapshots);
-            rest = ravel(Rest);
-            // Standard estimates
-            Zsel = spatial_smoothing(F, linalg::dot(transpose(Esel), rest));
-            Zavg = spatial_smoothing(F, linalg::dot(transpose(Eavg), rest));
-            // Proposed estimate
-            permitted_iterations = 100;
-            Zin = sqrtm(linalg::dot(Zavg, transpose(conj(Zavg))));
-            Zstructured = structured_estimate(Zin, Lp - number_of_sources, permitted_iterations, false);
-            err_sel(j, i) = real(pow(linalg::norm(Zsel - Z), 2));
-            err_avg(j, i) = real(pow(linalg::norm(Zavg - Z), 2));
-            err_structured(j, i) = real(pow(linalg::norm(Zstructured - Z), 2));
-        }
+        received_snapshots = snapshots(S, source_powers, noise_power, Q);
+        Rest = autocorrelation_matrix_est(received_snapshots);
+        rest = ravel(Rest);
+        // Standard estimates
+        Zsel = spatial_smoothing(F, linalg::dot(transpose(Esel), rest));
+        Zavg = spatial_smoothing(F, linalg::dot(transpose(Eavg), rest));
+        // Proposed estimate
+        permitted_iterations = 100;
+        Zin = sqrtm(linalg::dot(Zavg, transpose(conj(Zavg))));
+        Zstructured = structured_estimate(Zin, Lp - number_of_sources, permitted_iterations, false);
+        err_sel(j, i) = real(pow(linalg::norm(Zsel - Z), 2));
+        err_avg(j, i) = real(pow(linalg::norm(Zavg - Z), 2));
+        err_structured(j, i) = real(pow(linalg::norm(Zstructured - Z), 2));
     }
+}
 ```
 Finally, we display the MSE attained by each method for every value of sample-support. 
 ```cpp
-    for (int j = 0; j < number_of_snapshots.size(); j++)
-    {
-        int Q = number_of_snapshots(j);
-        cout << "Sample support:" << Q << endl;
-        cout << "\t MSE (selection):\t\t" << real(mean(row(err_sel, j))) << endl;
-        cout << "\t MSE (averaging):\t\t" << real(mean(row(err_avg, j))) << endl;
-        cout << "\t MSE (structured-proposed):\t" << real(mean(row(err_structured, j))) << endl;
-    }
+for (int j = 0; j < number_of_snapshots.size(); j++)
+{
+    int Q = number_of_snapshots(j);
+    cout << "Sample support:" << Q << endl;
+    cout << "\t MSE (selection):\t\t" << real(mean(row(err_sel, j))) << endl;
+    cout << "\t MSE (averaging):\t\t" << real(mean(row(err_avg, j))) << endl;
+    cout << "\t MSE (structured-proposed):\t" << real(mean(row(err_structured, j))) << endl;
+}
 ```
 For the above parameter configuration, the empirical MSE is computed as 
 
