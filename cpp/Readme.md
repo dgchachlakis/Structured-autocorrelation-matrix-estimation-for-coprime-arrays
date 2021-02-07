@@ -1,6 +1,5 @@
 
-##  Title
-
+## Structured autocorrelation matrix estimation for coprime arrays
 
 In this repo we implement (in C++) an algorithmic frawework designed to compute an autocorrelation matrix estimate for the coarray which satisfies structure-properties of the true autocorrelation matrix [[1]](https://doi.org/10.1016/j.sigpro.2021.107987) --i.e., it is (i) Positive-Definite, (ii) Hermitian, (iii) Toeplitz, and (iv) has equal noise-subspace eigenvalues. 
 
