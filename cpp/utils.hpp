@@ -152,7 +152,7 @@ xarray<complex<double>> snapshots(xarray<complex<double>> response_matrix, xarra
     int L = response_matrix.shape(0);
     int K = response_matrix.shape(1);
     xarray<complex<double>> Y = zeros<double>({L, number_of_snapshots}) + 1i * zeros<double>({L, number_of_snapshots});
-    xarray<double> D = diag(source_powers);
+    xarray<double> D = sqrt(diag(source_powers));
     xarray<complex<double>> symbols = linalg::dot(D, (random::randn<double>({K, number_of_snapshots}) + 1i * random::randn<double>({K, number_of_snapshots})) / sqrt(2));
     xarray<complex<double>> awgn = sqrt(noise_power) * (random::randn<double>({L, number_of_snapshots}) + 1i * random::randn<double>({L, number_of_snapshots})) / sqrt(2);
     Y = linalg::dot(response_matrix, symbols) + awgn;
